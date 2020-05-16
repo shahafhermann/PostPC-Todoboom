@@ -10,9 +10,9 @@ public class Task implements Parcelable{
     private String description;
     private boolean done;
 
-    public Task(String description, boolean done) {
+    public Task(String description) {
         this.description = description;
-        this.done = done;
+        this.done = false;
     }
 
     public void complete() {
@@ -28,8 +28,7 @@ public class Task implements Parcelable{
     }
 
 
-    //* Parcelable Interface Functions Below *//
-
+    //* Parcelable Interface Methods Below *//
     /**
      * Describe the kinds of special objects contained in this Parcelable instance's marshaled
      * representation.
