@@ -1,0 +1,2 @@
+rootProject.name='Todoboom'
+include ':app'
