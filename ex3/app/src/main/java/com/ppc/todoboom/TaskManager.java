@@ -32,6 +32,9 @@ public class TaskManager {
         String json = sp.getString(SP_TASKS, "");
         Type type = new TypeToken<List<Task>>(){}.getType();
         taskList = gson.fromJson(json, type);
+        if (taskList == null) {
+            taskList = new ArrayList<>();
+        }
     }
 
     public ArrayList<Task> getList() {

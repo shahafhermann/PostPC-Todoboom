@@ -45,6 +45,7 @@ public class Task implements Parcelable{
      * @param out The Parcel in which the object should be written.
      * @param flags Additional flags about how the object should be written.
      */
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     public void writeToParcel(Parcel out, int flags) {
         out.writeString(description);
@@ -59,6 +60,7 @@ public class Task implements Parcelable{
          * @param in The Parcel to read the object's data from.
          * @return a new instance of the Parcelable class.
          */
+        @RequiresApi(api = Build.VERSION_CODES.Q)
         @Override
         public Task createFromParcel(Parcel in) {
             return new Task(in);
@@ -79,6 +81,7 @@ public class Task implements Parcelable{
      * Private Constructor
      * @param in a Parcel to be reconstructed
      */
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     private Task(Parcel in){
         description = in.readString();
         done = in.readBoolean();

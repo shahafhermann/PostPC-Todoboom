@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -20,20 +21,22 @@ import static android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
 class TaskHolder extends RecyclerView.ViewHolder {
 
     private final TextView text;
+    private final CardView card;
 
     public TaskHolder(View v) {
         super(v);
         text = v.findViewById(R.id.taskText);
+        card = v.findViewById(R.id.taskCard);
     }
 
     public void markDone() {
-        text.setPaintFlags(text.getPaintFlags() | STRIKE_THRU_TEXT_FLAG);
         text.setTextColor(Color.argb(55, 0, 0, 0));
+        card.setCardBackgroundColor(itemView.getResources().getColor(R.color.completeTask));
     }
 
     public void markUnDone() {
-        text.setPaintFlags(text.getPaintFlags() & ~STRIKE_THRU_TEXT_FLAG);
         text.setTextColor(Color.argb(255, 0, 0, 0));
+        card.setCardBackgroundColor(itemView.getResources().getColor(R.color.notCompleteTask));
     }
 
     public TextView getTextView() {

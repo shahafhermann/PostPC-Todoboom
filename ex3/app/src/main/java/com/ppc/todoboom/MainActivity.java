@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -21,11 +23,18 @@ public class MainActivity extends AppCompatActivity {
 
     private final String KEY_INPUT = "inputText";
     private final String KEY_LIST = "taskList";
+    private final String KEY_POPUP = "dialogOpen";
+    private final String KEY_TASK_DEL = "taskToDelete";
+    private String MSG_CONFIRM_DEL = "The task %s will be deleted.";
 
     private App app;
     private ArrayList<Task> taskList = new ArrayList<>();
     private TaskAdapter taskAdapter = new TaskAdapter(taskList);
+
+    // Used for restoring state
     private String inputText = "";
+    private Boolean dialogOpen = false;
+    private Task taskToDelete = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,8 +95,33 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onLongClickListener(Task task){
-
+            showPopup(task);
         }
+    }
+
+    private void showPopup(Task task) {
+        taskToDelete = task;
+        final String taskDescription = task.getDescription();
+        String confirmMsg = String.format(MSG_CONFIRM_DEL, taskDescription);
+        AlertDialog.Builder adb = new AlertDialog.Builder(MainActivity.this);
+        adb.setMessage(confirmMsg)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        app.getTaskManager().deleteItem(taskToDelete);
+                        taskList.remove(taskToDelete);
+                        taskAdapter.updateList(taskList);
+                        taskToDelete = null;
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        taskToDelete = null;
+                    }
+                });
+        AlertDialog popup = adb.create();
+        popup.show();
     }
 
     @Override
@@ -95,6 +129,8 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         outState.putString(KEY_INPUT, inputText);
         outState.putParcelableArrayList(KEY_LIST, taskList);
+        outState.putBoolean(KEY_POPUP, dialogOpen);
+        outState.putParcelable(KEY_TASK_DEL, taskToDelete);
     }
 
     @Override
@@ -103,6 +139,11 @@ public class MainActivity extends AppCompatActivity {
         inputText = savedInstanceState.getString(KEY_INPUT);
         taskList = savedInstanceState.getParcelableArrayList(KEY_LIST);
         taskAdapter.updateList(taskList);
+        dialogOpen = savedInstanceState.getBoolean(KEY_POPUP);
+        taskToDelete = savedInstanceState.getParcelable(KEY_TASK_DEL);
+        if (taskToDelete != null) {
+            showPopup(taskToDelete);
+        }
     }
 
     private void hideKeyboard(View view) {
