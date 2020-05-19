@@ -109,3 +109,10 @@ class TaskAdapter extends RecyclerView.Adapter {
         return taskList.size();
     }
 }
+
+abstract class Listener {
+
+    public abstract void onClickListener(Task task);
+
+    public abstract void onLongClickListener(Task task);
+}

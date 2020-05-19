@@ -64,14 +64,10 @@ public class MainActivity extends AppCompatActivity {
                     Task task = new Task(inputTextEditor.getText().toString());
                     inputTextEditor.setText("");
                     inputText = "";
-
-                    hideKeyboard(view);
-//                val manager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-//                manager.hideSoftInputFromWindow(it.windowToken, 0)
-
-
                     app.getTaskManager().addTask(task);
                     taskAdapter.updateList(taskList);
+
+                    hideKeyboard(view);
                 }
             }
         });
