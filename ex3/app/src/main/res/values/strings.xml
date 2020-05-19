@@ -3,5 +3,5 @@
     <string name="create_button">Create</string>
     <string name="empty_error">you can\'t create an empty TODO item, oh silly!</string>
     <string name="done_msg">TODO %1$s is now DONE. BOOM!</string>
-    <string name="def_input_text" />
+    <string name="mainTitle">What\'s Next?</string>
 </resources>

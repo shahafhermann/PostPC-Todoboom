@@ -15,6 +15,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
 
+        android:padding="5dp"
         android:layout_gravity="center"
         app:cardCornerRadius="4dp"
         app:cardBackgroundColor="#C9FF8282">
@@ -23,13 +24,14 @@
             android:id="@+id/taskText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="dummy text"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
 
             android:textAlignment="center"
             android:textSize="24sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:fontFamily="casual"
+            android:layout_gravity="center"
+            android:text="dummy text"/>
 
     </androidx.cardview.widget.CardView>
 
