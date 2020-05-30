@@ -10,6 +10,7 @@ public class App extends Application {
     private TaskManager tm;
     private static final String LOG_MSG_NUM_OF_TASKS = "Number of tasks: ";
     private static final String LOG_KEY_NUM_OF_TASKS = "Todoboom";
+    final String EXTRA_ID = "id";
 
     @Override
     public void onCreate() {

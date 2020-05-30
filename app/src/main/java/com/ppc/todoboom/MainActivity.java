@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -23,18 +24,15 @@ public class MainActivity extends AppCompatActivity {
 
     private final String KEY_INPUT = "inputText";
     private final String KEY_LIST = "taskList";
-    private final String KEY_POPUP = "dialogOpen";
-    private final String KEY_TASK_DEL = "taskToDelete";
-    private String MSG_CONFIRM_DEL = "The task %s will be deleted.";
 
     private App app;
     private ArrayList<Task> taskList = new ArrayList<>();
-    private TaskAdapter taskAdapter = new TaskAdapter(taskList);
+    private TaskAdapter taskAdapter;
+    private TaskManager taskManager;
+    private EditText inputTextEditor;
 
     // Used for restoring state
     private String inputText = "";
-    private Boolean dialogOpen = false;
-    private Task taskToDelete = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,104 +40,88 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         app = (App) getApplicationContext();
-        taskList = app.getTaskManager().getList();
-        taskAdapter.updateList(taskList);
-        taskAdapter.setListener(new taskListener());
+        taskManager = app.getTaskManager();
+        taskList = taskManager.getList();
+        taskAdapter =  taskManager.getAdapter();
+        taskAdapter.setListener(new TaskListener());
 
+        /*>> UI ELEMENTS <<*/
+        /* RecyclerView */
         RecyclerView recycler = findViewById(R.id.task_recycler);
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(taskAdapter);
 
-        Button create = findViewById(R.id.createButton);
-        final EditText inputTextEditor = findViewById(R.id.inputText);
+        /* Other elements */
+        inputTextEditor = findViewById(R.id.inputText);
         inputTextEditor.setText(inputText);
-        create.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (inputTextEditor.getText().toString().equals("")) {
-                    Toast toast = Toast.makeText(app, R.string.empty_error, Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.CENTER, 0, 0);
-                    toast.show();
-                } else {
-                    Task task = new Task(inputTextEditor.getText().toString());
-                    inputTextEditor.setText("");
-                    inputText = "";
-                    app.getTaskManager().addTask(task);
-                    taskAdapter.updateList(taskList);
-
-                    hideKeyboard(view);
-                }
-            }
-        });
-
+        Button create = findViewById(R.id.createButton);
+        create.setOnClickListener(new CreateButtonListener());
     }
 
-    class taskListener extends Listener {
+    /**
+     * A Listener for user interactions with the tasks
+     */
+    class TaskListener extends Listener {
         @Override
         public void onClickListener(Task task){
-            if (!task.isDone()) {
-                task.complete();
-                taskAdapter.updateList(taskList);
-                app.getTaskManager().updateList(taskList);
-                Resources res = getResources();
-                String doneMsg = res.getString(R.string.done_msg, task.getDescription());
-                Toast toast = Toast.makeText(app, doneMsg, Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.CENTER, 0, 0);
-                toast.show();
-            }
+//            if (!task.isComplete()) {
+//                task.setComplete(true);
+//                taskAdapter.updateList(taskList);
+//                app.getTaskManager().updateList(taskList);
+//                Resources res = getResources();
+//                String doneMsg = res.getString(R.string.done_msg, task.getDescription());
+//                Toast toast = Toast.makeText(app, doneMsg, Toast.LENGTH_SHORT);
+//                toast.setGravity(Gravity.CENTER, 0, 0);
+//                toast.show();
+//            }
+
+//            if (task.isComplete()) {
+            Intent taskCompleteIntent = new Intent(getApplicationContext(),
+                    CompletedTaskActivity.class);
+            taskCompleteIntent.putExtra(app.EXTRA_ID, task.getId());
+            startActivity(taskCompleteIntent);
+//            }
+            // todo: else if the task isnt complete....
         }
 
         @Override
-        public void onLongClickListener(Task task){
-            showPopup(task);
+        public void onLongClickListener(Task task){}
+    }
+
+    class CreateButtonListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            if (inputTextEditor.getText().toString().equals("")) {
+                Toast toast = Toast.makeText(app, R.string.empty_error, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            } else {
+                taskManager.addTask(inputTextEditor.getText().toString());
+                taskAdapter.updateList(taskList);
+                inputTextEditor.setText("");
+                inputText = "";
+
+                hideKeyboard(view);
+            }
         }
     }
 
-    private void showPopup(Task task) {
-        taskToDelete = task;
-        final String taskDescription = task.getDescription();
-        String confirmMsg = String.format(MSG_CONFIRM_DEL, taskDescription);
-        AlertDialog.Builder adb = new AlertDialog.Builder(MainActivity.this);
-        adb.setMessage(confirmMsg)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        app.getTaskManager().deleteItem(taskToDelete);
-                        taskList.remove(taskToDelete);
-                        taskAdapter.updateList(taskList);
-                        taskToDelete = null;
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        taskToDelete = null;
-                    }
-                });
-        AlertDialog popup = adb.create();
-        popup.show();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        taskManager.fetchData();
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(KEY_INPUT, inputText);
-        outState.putParcelableArrayList(KEY_LIST, taskList);
-        outState.putBoolean(KEY_POPUP, dialogOpen);
-        outState.putParcelable(KEY_TASK_DEL, taskToDelete);
     }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         inputText = savedInstanceState.getString(KEY_INPUT);
-        taskList = savedInstanceState.getParcelableArrayList(KEY_LIST);
-        taskAdapter.updateList(taskList);
-        dialogOpen = savedInstanceState.getBoolean(KEY_POPUP);
-        taskToDelete = savedInstanceState.getParcelable(KEY_TASK_DEL);
-        if (taskToDelete != null) {
-            showPopup(taskToDelete);
-        }
     }
 
     private void hideKeyboard(View view) {

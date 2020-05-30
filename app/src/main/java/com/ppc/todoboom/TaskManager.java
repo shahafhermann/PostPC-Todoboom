@@ -1,64 +1,174 @@
 package com.ppc.todoboom;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import androidx.preference.PreferenceManager;
+import android.util.Log;
+import android.view.Gravity;
+import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import androidx.annotation.NonNull;
 
-import java.lang.reflect.Type;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
+
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 /**
  *
  */
-public class TaskManager {
+class TaskManager {
 
-    private ArrayList<Task> taskList;
-    private static final String SP_ADAPTER = "adapter";
-    private static final String SP_TASKS = "tasks";
+    private ArrayList<Task> taskList = new ArrayList<>();
+    private static final String DB_TASKS = "tasksCollection";
 
-    private static SharedPreferences sp;
+    private static final String DB_ACTION_TAG = "DB update: ";
+    private static final String DB_FAIL_ADD_MSG = "Failed to add the Task to the DB";
+    private static final String DB_FAIL_FET_MSG = "Failed to fetch the data from the DB";
+    private static final String DB_SUCC_ADD_MSG = "Task Added successfully";
+    private static final String DB_SUCC_FET_MSG =
+            "Data fetched successfully. Current number of tasks: ";
+    private static final String UPDATE_FAIL_UI = "A problem occurred while updating the database";
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private CollectionReference dbRef = db.collection(DB_TASKS);
+    private TaskAdapter adapter;
 
     /**
      * Constructor
-     * @param context
+     * @param context The context in which this object will live
      */
-    public TaskManager(Context context) {
-        Gson gson = new Gson();
-        sp = PreferenceManager.getDefaultSharedPreferences(context);
-        String json = sp.getString(SP_TASKS, "");
-        Type type = new TypeToken<List<Task>>(){}.getType();
-        taskList = gson.fromJson(json, type);
-        if (taskList == null) {
-            taskList = new ArrayList<>();
-        }
+    TaskManager(Context context) {
+        adapter = new TaskAdapter(taskList);
     }
 
-    public ArrayList<Task> getList() {
+    void fetchData() {
+        taskList.clear();
+        dbRef.get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull com.google.android.gms.tasks.Task<QuerySnapshot>
+                                                   task) {
+                        for (DocumentSnapshot ds: Objects.requireNonNull(task.getResult())) {
+                            Task t = ds.toObject(Task.class);
+                            taskList.add(t);
+                        }
+                        Log.i(DB_ACTION_TAG, DB_SUCC_FET_MSG + taskList.size());
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+//                .addOnSuccessListener(
+//                        new OnSuccessListener<QuerySnapshot>() {
+//                            @Override
+//                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+//                                for (DocumentSnapshot ds: queryDocumentSnapshots) {
+//                                    Task task = ds.toObject(Task.class);
+//                                    taskList.add(task);
+//                                }
+//                                Log.i(DB_ACTION_TAG, DB_SUCC_FET_MSG + taskList.size());
+//                                adapter.notifyDataSetChanged();
+//                            }
+//                        }
+//                )
+//                .addOnFailureListener(
+//                        new OnFailureListener() {
+//                            @Override
+//                            public void onFailure(@NonNull Exception e) {
+//                                Log.w(DB_ACTION_TAG, DB_FAIL_FET_MSG, e);
+//                            }
+//                        }
+//                );
+    }
+
+    ArrayList<Task> getList() {
         return taskList;
     }
 
-    public void addTask(Task t) {
-        taskList.add(t);
-        updateSP();
+    TaskAdapter getAdapter() { return adapter; }
+
+    /**
+     * Returns the task with the requested id. If it's not found, returns null.
+     * @param id The wanted task's id
+     */
+    Task getTask(String id) {
+        for (Task task: taskList) {
+            if (task.getId().equals(id)) {
+                return task;
+            }
+        }
+        return null;
     }
 
-    public void deleteItem(Task t) {
-        taskList.remove(t);
-        updateSP();
+    void addTask(String description) {
+        final Task task = new Task(description);
+        db.collection(DB_TASKS)
+                .add(task)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        String id = documentReference.getId();
+                        task.setId(id);
+                        taskList.add(task);
+                        dbRef.document(id).set(task, SetOptions.merge());
+                        Log.i(DB_ACTION_TAG, DB_SUCC_ADD_MSG);
+                        adapter.notifyDataSetChanged();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(DB_ACTION_TAG, DB_FAIL_ADD_MSG, e);
+                    }
+                });
     }
 
-    public void updateList(ArrayList<Task> tl) {
-        taskList = tl;
-        updateSP();
+    void deleteTask(Task task) {
+        taskList.remove(task);
+        dbRef.document(task.getId());
     }
 
-    private void updateSP() {
-        sp.edit()
-                .putString(SP_TASKS, new Gson().toJson(taskList))
-                .apply();
+    void completeTask(Task task, Context context) {
+        task.setComplete(true);
+        updateDB(task, context);
     }
+
+    void renewTask(Task task, Context context) {
+        task.setComplete(false);
+        updateDB(task, context);
+    }
+
+    void setTaskDescription(Task task, String description, Context context) {
+        task.setDescription(description);
+        updateDB(task, context);
+    }
+
+    private void updateDB(Task task, final Context context) {
+        task.updateLastEditTime();
+        dbRef.document(task.getId()).set(task, SetOptions.merge())
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast toast = Toast.makeText(context, UPDATE_FAIL_UI, Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+                    }
+                });
+    }
+
+//    public void updateList(ArrayList<Task> tl) {
+//        taskList = tl;
+//        updateSP();
+//    }
+//
+//    private void updateSP() {
+//        sp.edit()
+//                .putString(SP_TASKS, new Gson().toJson(taskList))
+//                .apply();
+//    }
 }

@@ -13,8 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-import static android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
-
 /**
  * A class representing a task holder for the recycler view.
  */
@@ -82,7 +80,7 @@ class TaskAdapter extends RecyclerView.Adapter {
         final Task task = taskList.get(position);
         th.getTextView().setText(task.getDescription());
 
-        if (task.isDone()) {
+        if (task.isComplete()) {
             th.markDone();
         } else {
             th.markUnDone();
