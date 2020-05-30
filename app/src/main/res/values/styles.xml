@@ -8,4 +8,14 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="DeleteButton" parent="Widget.AppCompat.Button.Colored">
+        <item name="colorButtonNormal">@color/delete_button</item>
+        <item name="android:textColor">@color/delete_button_text</item>
+    </style>
+
+    <style name="CompleteButton" parent="Widget.AppCompat.Button.Colored">
+        <item name="colorButtonNormal">@color/complete_button</item>
+<!--        <item name="android:textColor">@color/complete_button_text</item>-->
+    </style>
+
 </resources>

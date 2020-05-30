@@ -6,4 +6,15 @@
     <color name="completeTask">#1B45FF00</color>
     <color name="notCompleteTask">#22FF0000</color>
     <color name="mainTitleColor">#00806D</color>
+
+    <!-- Settings -->
+    <color name="task_information">#03DABA</color>
+    <color name="task_complete">#3CC800</color>
+    <color name="task_not_complete">#C80000</color>
+    <color name="subtitle_disabled">#878787</color>
+    <color name="subtitle_enabled">#565656</color>
+    <color name="delete_button">#C80000</color>
+    <color name="delete_button_text">#E3E3E3</color>
+    <color name="complete_button">#3CC800</color>
+<!--    <color name="complete_button_text">#E3E3E3</color>-->
 </resources>

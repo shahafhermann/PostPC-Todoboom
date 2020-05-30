@@ -1,7 +1,21 @@
 <resources>
     <string name="app_name">Todoboom</string>
     <string name="create_button">Create</string>
-    <string name="empty_error">you can\'t create an empty TODO item, oh silly!</string>
+    <string name="empty_error">Please enter a description for the task</string>
     <string name="done_msg">TODO %1$s is now DONE. BOOM!</string>
     <string name="mainTitle">What\'s Next?</string>
+
+    <!-- Settings -->
+    <string name="information_title">Task Information</string>
+    <string name="creation_date">Created: %1$s</string>
+    <string name="last_edit_date">Edited: %1$s</string>
+    <string name="description_title">Description</string>
+    <string name="status">Status: </string>
+    <string name="complete">Done</string>
+    <string name="not_complete">Pending</string>
+    <string name="renew_button">Renew</string>
+    <string name="delete_button">Delete</string>
+    <string name="complete_button">Complete</string>
+    <string name="save_button">Save</string>
+
 </resources>
