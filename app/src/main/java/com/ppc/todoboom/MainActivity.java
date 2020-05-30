@@ -6,10 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -23,7 +20,6 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     private final String KEY_INPUT = "inputText";
-    private final String KEY_LIST = "taskList";
 
     private App app;
     private ArrayList<Task> taskList = new ArrayList<>();
@@ -64,24 +60,17 @@ public class MainActivity extends AppCompatActivity {
     class TaskListener extends Listener {
         @Override
         public void onClickListener(Task task){
-//            if (!task.isComplete()) {
-//                task.setComplete(true);
-//                taskAdapter.updateList(taskList);
-//                app.getTaskManager().updateList(taskList);
-//                Resources res = getResources();
-//                String doneMsg = res.getString(R.string.done_msg, task.getDescription());
-//                Toast toast = Toast.makeText(app, doneMsg, Toast.LENGTH_SHORT);
-//                toast.setGravity(Gravity.CENTER, 0, 0);
-//                toast.show();
-//            }
-
-//            if (task.isComplete()) {
-            Intent taskCompleteIntent = new Intent(getApplicationContext(),
-                    CompletedTaskActivity.class);
-            taskCompleteIntent.putExtra(app.EXTRA_ID, task.getId());
-            startActivity(taskCompleteIntent);
-//            }
-            // todo: else if the task isnt complete....
+            if (task.isComplete()) {
+                Intent taskCompleteIntent = new Intent(getApplicationContext(),
+                        CompleteTaskActivity.class);
+                taskCompleteIntent.putExtra(app.EXTRA_ID, task.getId());
+                startActivity(taskCompleteIntent);
+            } else {
+                Intent taskNotCompleteIntent = new Intent(getApplicationContext(),
+                        NonCompleteTaskActivity.class);
+                taskNotCompleteIntent.putExtra(app.EXTRA_ID, task.getId());
+                startActivity(taskNotCompleteIntent);
+            }
         }
 
         @Override

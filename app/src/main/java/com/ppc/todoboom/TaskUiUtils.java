@@ -5,10 +5,10 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -19,22 +19,22 @@ import java.util.ArrayList;
 class TaskHolder extends RecyclerView.ViewHolder {
 
     private final TextView text;
-    private final CardView card;
+    private final CheckBox check;
 
     public TaskHolder(View v) {
         super(v);
         text = v.findViewById(R.id.taskText);
-        card = v.findViewById(R.id.taskCard);
+        check = v.findViewById(R.id.checkTask);
     }
 
-    public void markDone() {
+    public void complete() {
         text.setTextColor(Color.argb(55, 0, 0, 0));
-        card.setCardBackgroundColor(itemView.getResources().getColor(R.color.completeTask));
+        check.setChecked(true);
     }
 
-    public void markUnDone() {
+    public void renew() {
         text.setTextColor(Color.argb(255, 0, 0, 0));
-        card.setCardBackgroundColor(itemView.getResources().getColor(R.color.notCompleteTask));
+        check.setChecked(false);
     }
 
     public TextView getTextView() {
@@ -81,9 +81,9 @@ class TaskAdapter extends RecyclerView.Adapter {
         th.getTextView().setText(task.getDescription());
 
         if (task.isComplete()) {
-            th.markDone();
+            th.complete();
         } else {
-            th.markUnDone();
+            th.renew();
         }
 
         th.itemView.setOnClickListener(new View.OnClickListener(){

@@ -63,27 +63,6 @@ class TaskManager {
                         adapter.notifyDataSetChanged();
                     }
                 });
-//                .addOnSuccessListener(
-//                        new OnSuccessListener<QuerySnapshot>() {
-//                            @Override
-//                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-//                                for (DocumentSnapshot ds: queryDocumentSnapshots) {
-//                                    Task task = ds.toObject(Task.class);
-//                                    taskList.add(task);
-//                                }
-//                                Log.i(DB_ACTION_TAG, DB_SUCC_FET_MSG + taskList.size());
-//                                adapter.notifyDataSetChanged();
-//                            }
-//                        }
-//                )
-//                .addOnFailureListener(
-//                        new OnFailureListener() {
-//                            @Override
-//                            public void onFailure(@NonNull Exception e) {
-//                                Log.w(DB_ACTION_TAG, DB_FAIL_FET_MSG, e);
-//                            }
-//                        }
-//                );
     }
 
     ArrayList<Task> getList() {
@@ -130,7 +109,7 @@ class TaskManager {
 
     void deleteTask(Task task) {
         taskList.remove(task);
-        dbRef.document(task.getId());
+        dbRef.document(task.getId()).delete();
     }
 
     void completeTask(Task task, Context context) {
@@ -160,15 +139,4 @@ class TaskManager {
                     }
                 });
     }
-
-//    public void updateList(ArrayList<Task> tl) {
-//        taskList = tl;
-//        updateSP();
-//    }
-//
-//    private void updateSP() {
-//        sp.edit()
-//                .putString(SP_TASKS, new Gson().toJson(taskList))
-//                .apply();
-//    }
 }

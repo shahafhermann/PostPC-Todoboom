@@ -2,20 +2,26 @@ package com.ppc.todoboom;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.preference.PreferenceFragmentCompat;
 
 public class CompleteTaskActivity extends AppCompatActivity {
 
-    private final String KEY_POPUP = "dialogOpen";
+//    private final String KEY_POPUP = "dialogOpen";
     private final String KEY_TASK_DEL = "taskToDelete";
+    private final String TASK_RENEW_MSG = "Not done yet?...";
     private String MSG_CONFIRM_DEL = "The task %s will be deleted.";
 
     private TaskManager taskManager;
@@ -37,6 +43,47 @@ public class CompleteTaskActivity extends AppCompatActivity {
         task = taskManager.getTask(id);
 
         /*>> UI ELEMENTS <<*/
+        Resources res = getResources();
+
+        TextView creationTime = findViewById(R.id.creation_date);
+        String creationTimeString = res.getString(R.string.creation_date,
+                                                  task.getCreationTime().toString());
+        creationTime.setText(creationTimeString);
+
+        TextView editTime = findViewById(R.id.last_edit_date);
+        String editTimeString = res.getString(R.string.last_edit_date,
+                                              task.getLastEditTime().toString());
+        editTime.setText(editTimeString);
+
+        TextView description = findViewById(R.id.description_text);
+        description.setText(task.getDescription());
+
+        Button renewButton = findViewById(R.id.renew);
+        renewButton.setOnClickListener(new RenewButtonListener());
+
+        Button deleteButton = findViewById(R.id.delete);
+        deleteButton.setOnClickListener(new DeleteButtonListener());
+    }
+
+    class RenewButtonListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            Context context = getApplicationContext();
+            taskManager.renewTask(task, context);
+            Toast toast = Toast.makeText(context, TASK_RENEW_MSG, Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+
+            setResult(RESULT_OK, new Intent());
+            finish();
+        }
+    }
+
+    class DeleteButtonListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            showPopup(task);
+        }
     }
 
     private void showPopup(Task task) {
@@ -51,9 +98,8 @@ public class CompleteTaskActivity extends AppCompatActivity {
                         taskManager.deleteTask(taskToDelete);
                         taskToDelete = null;
 
-                        // TODO: should we go back automatically
-                        Intent gotBackIntent = new Intent();
-                        setResult(RESULT_OK, gotBackIntent);
+                        Intent goBackIntent = new Intent();
+                        setResult(RESULT_OK, goBackIntent);
                         finish();
                     }
                 })
